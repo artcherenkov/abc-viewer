@@ -1,12 +1,19 @@
 "use client";
 
-import { useActionState } from "react";
 import Link from "next/link";
+import { useActionState } from "react";
 
-import { signup } from "@/actions/auth";
+import { signup } from "@/lib/actions/authentication/signup";
 
 export function SignUpForm() {
-  const [state, action, pending] = useActionState(signup, undefined);
+  const [state, action, pending] = useActionState(signup, {
+    errors: {},
+    fieldsData: {
+      name: "test",
+      email: "test@test.com",
+      password: "test",
+    },
+  });
 
   const defaultValues = state?.fieldsData;
 
@@ -67,7 +74,7 @@ export function SignUpForm() {
           />
           {state?.errors?.password && (
             <div className="mt-0.5 ml-0.5">
-              <p>Password must:</p>
+              <p>Пароль должен:</p>
               <ul className="flex flex-col">
                 {state.errors.password.map((error) => (
                   <li key={error}>
@@ -87,7 +94,7 @@ export function SignUpForm() {
         <Link className="link" href="/sign-in">
           Уже есть аккаунт? Войти
         </Link>
-        {state?.message && <p className="text-red-4000">{state.message}</p>}
+        {state?.message && <p className="text-red-400">{state.message}</p>}
       </form>
     </div>
   );

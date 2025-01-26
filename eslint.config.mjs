@@ -7,7 +7,10 @@ const compat = new FlatCompat({
 const eslintConfig = [
   ...compat.config({
     extends: ["next/core-web-vitals", "next/typescript"],
+    plugins: ["simple-import-sort"],
     rules: {
+      "simple-import-sort/imports": "error",
+      "simple-import-sort/exports": "error",
       "@typescript-eslint/no-unused-vars": [
         "error",
         {
@@ -16,6 +19,10 @@ const eslintConfig = [
           caughtErrorsIgnorePattern: "^_", // Игнорируем все ошибки в блоках catch
         },
       ],
+    },
+    parserOptions: {
+      sourceType: "module",
+      ecmaVersion: "latest",
     },
   }),
 ];
