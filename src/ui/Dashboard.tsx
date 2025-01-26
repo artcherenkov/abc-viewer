@@ -4,6 +4,7 @@ import { User } from "next-auth";
 import { useActionState } from "react";
 
 import { signout } from "@/lib/actions/authentication/signout";
+import FileUploader from "@/ui/FileUploader";
 
 interface IDashboardProps {
   user?: User;
@@ -22,6 +23,8 @@ export function Dashboard(props: IDashboardProps) {
         <button className="btn mt-4" type="submit" disabled={pending}>
           Выйти
         </button>
+
+        <FileUploader />
 
         <p className="text-red-400 mt-2">{state?.message}</p>
       </form>

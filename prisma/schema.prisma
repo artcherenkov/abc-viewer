@@ -52,6 +52,7 @@ model User {
   image         String?
   accounts      Account[]
   sessions      Session[]
+  files         File[]
 
   @@map("users")
 }
@@ -63,4 +64,18 @@ model VerificationToken {
 
   @@unique([identifier, token])
   @@map("verification_tokens")
+}
+
+model File {
+  id         String   @id @default(cuid())
+  userId     String   @map("user_id")
+  fileName   String   @map("file_name")
+  fileKey    String   @map("file_key")
+  fileSize   Int      @map("file_size")
+  uploadedAt DateTime @default(now()) @map("uploaded_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, fileKey])
+  @@map("files")
 }
