@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useActionState } from "react";
 
+import { Button } from "@/components/ui/Button";
 import { signin } from "@/lib/actions/authentication/signin";
 
 export function SignInForm() {
@@ -17,7 +18,7 @@ export function SignInForm() {
   const defaultValues = state?.fieldsData;
 
   return (
-    <div className="max-w-lg">
+    <div>
       <h1 className="text-xl">Войти</h1>
       <form className="mt-8 flex flex-col gap-4" action={action}>
         <label className="form-control w-full">
@@ -60,9 +61,9 @@ export function SignInForm() {
           )}
         </label>
 
-        <button className="btn mt-2" type="submit" disabled={pending}>
+        <Button className="btn mt-2" type="submit" disabled={pending}>
           Войти
-        </button>
+        </Button>
         <Link className="link" href="/sign-up">
           Еще нет аккаунта? Зарегистрироваться
         </Link>
