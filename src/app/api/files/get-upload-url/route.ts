@@ -1,15 +1,15 @@
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 import { auth } from "@/auth";
 
 import s3Client from "../../../../../s3/client";
 
-export const POST = auth(async (req) => {
-  const { auth } = req;
+export const POST = async (req: NextRequest) => {
+  const authSession = await auth();
 
-  if (!auth) {
+  if (!authSession || !authSession.user?.id) {
     return NextResponse.json({ status: "Unauthorized" }, { status: 401 });
   }
 
@@ -28,7 +28,7 @@ export const POST = auth(async (req) => {
   }
 
   // Генерация уникального ключа файла
-  const fileKey = `${auth.user?.id}/${Date.now()}-${crypto.randomUUID()}-${fileName}`;
+  const fileKey = `${authSession.user?.id}/${Date.now()}-${crypto.randomUUID()}-${fileName}`;
 
   // Генерация Signed URL
   const command = new PutObjectCommand({
@@ -46,4 +46,4 @@ export const POST = auth(async (req) => {
     },
     { status: 200 },
   );
-});
+};

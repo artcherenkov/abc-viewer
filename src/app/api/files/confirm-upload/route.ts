@@ -1,13 +1,13 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 import { auth } from "@/auth";
 
 import { prisma } from "../../../../../prisma/prisma";
 
-export const POST = auth(async (req) => {
-  const { auth } = req;
+export const POST = async (req: NextRequest) => {
+  const authSession = await auth();
 
-  if (!auth || !auth.user?.id) {
+  if (!authSession || !authSession.user?.id) {
     return NextResponse.json({ status: "Unauthorized" }, { status: 401 });
   }
 
@@ -26,7 +26,7 @@ export const POST = auth(async (req) => {
   const existingFile = await prisma.file.findUnique({
     where: {
       userId_fileKey: {
-        userId: auth.user.id,
+        userId: authSession.user.id,
         fileKey: fileKey,
       },
     },
@@ -42,7 +42,7 @@ export const POST = auth(async (req) => {
   // Сохранение метаданных
   await prisma.file.create({
     data: {
-      userId: auth.user.id,
+      userId: authSession.user.id,
       fileKey,
       fileName,
       fileSize,
@@ -50,4 +50,4 @@ export const POST = auth(async (req) => {
   });
 
   return NextResponse.json({ status: "File metadata saved" }, { status: 200 });
-});
+};

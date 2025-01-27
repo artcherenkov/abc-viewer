@@ -4,16 +4,16 @@ import { auth } from "@/auth";
 
 import { prisma } from "../../../../prisma/prisma";
 
-export const GET = auth(async (req) => {
-  const { auth } = req;
+export const GET = async () => {
+  const authSession = await auth();
 
-  if (!auth || !auth.user?.id) {
+  if (!authSession || !authSession.user?.id) {
     return NextResponse.json({ status: "Unauthorized" }, { status: 401 });
   }
 
   // Получение списка файлов для текущего пользователя
   const files = await prisma.file.findMany({
-    where: { userId: auth.user.id },
+    where: { userId: authSession.user.id },
     select: {
       id: true,
       fileName: true,
@@ -30,4 +30,4 @@ export const GET = auth(async (req) => {
     },
     { status: 200 },
   );
-});
+};
