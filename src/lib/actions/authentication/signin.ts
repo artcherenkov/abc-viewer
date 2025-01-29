@@ -17,19 +17,19 @@ export async function signin(_prevState: unknown, formData: FormData) {
   };
 
   // Провалидировать данные из формы
-  const validatedFields = SignInFormSchema.safeParse(fieldsData);
+  const validated = SignInFormSchema.safeParse(fieldsData);
 
   // Отобразить ошибки валидации
-  if (!validatedFields.success) {
+  if (!validated.success) {
     return {
-      errors: validatedFields.error.flatten().fieldErrors,
+      errors: validated.error.flatten().fieldErrors,
       fieldsData,
     };
   }
 
   try {
     // Авторизовать пользователя
-    await signIn("credentials", formData);
+    await signIn("credentials", validated.data);
   } catch (error) {
     // Next.js под капотом как-то использует эту ошибку для редиректа
     if (isRedirectError(error)) throw error;

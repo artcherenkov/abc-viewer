@@ -44,15 +44,17 @@ model Session {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime? @map("email_verified")
-  password      String?
-  image         String?
-  accounts      Account[]
-  sessions      Session[]
-  files         File[]
+  id               String    @id @default(cuid())
+  name             String?
+  email            String?   @unique
+  emailVerified    DateTime? @map("email_verified")
+  password         String?
+  image            String?
+  accounts         Account[]
+  sessions         Session[]
+  resetToken       String? // Для сброса пароля
+  resetTokenExpiry DateTime? // Для сброса пароля
+  files            File[]
 
   @@map("users")
 }
