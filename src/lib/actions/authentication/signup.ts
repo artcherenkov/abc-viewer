@@ -42,7 +42,7 @@ export async function signup(_prevState: unknown, formData: FormData) {
       data: { name, email, password: hashedPassword },
     });
 
-    if (!user) return { message: USER_CREATION_ERROR, fieldsData };
+    if (!user) return { formError: USER_CREATION_ERROR, fieldsData };
 
     // Вызвать экшен для авторизации сразу после регистрации
     await signIn("credentials", formData);
@@ -51,9 +51,9 @@ export async function signup(_prevState: unknown, formData: FormData) {
     if (isRedirectError(error)) throw error;
 
     if (isUserAlreadyExistsError(error)) {
-      return { message: USER_ALREADY_EXISTS_ERROR, fieldsData };
+      return { formError: USER_ALREADY_EXISTS_ERROR, fieldsData };
     }
 
-    return { message: UNKNOWN_ERROR, fieldsData };
+    return { formError: UNKNOWN_ERROR, fieldsData };
   }
 }

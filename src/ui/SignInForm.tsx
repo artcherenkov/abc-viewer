@@ -1,74 +1,119 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
 import { Button } from "@/components/ui/Button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/Card";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/Form";
+import { Input } from "@/components/ui/Input";
+import { useToast } from "@/hooks/useToast";
 import { signin } from "@/lib/actions/authentication/signin";
+import { SignInFormSchema } from "@/lib/descriptions/signInFormSchema";
+
+const formSchema = SignInFormSchema;
 
 export function SignInForm() {
   const [state, action, pending] = useActionState(signin, {
     errors: {},
     fieldsData: {
-      email: "test@test.com",
+      email: "ivan@primer.ru",
       password: "test",
     },
   });
 
-  const defaultValues = state?.fieldsData;
+  const { toast } = useToast();
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: state?.fieldsData,
+  });
+
+  useEffect(() => {
+    if (!pending && state?.formError) {
+      toast({
+        variant: "destructive",
+        title: "Ошибка регистрации",
+        description: state.formError,
+      });
+    }
+  }, [state?.formError, pending, toast]);
 
   return (
-    <div>
-      <h1 className="text-xl">Войти</h1>
-      <form className="mt-8 flex flex-col gap-4" action={action}>
-        <label className="form-control w-full">
-          <div className="label">
-            <span className="label-text">Почта</span>
-          </div>
-          <input
-            type="email"
-            name="email"
-            defaultValue={defaultValues?.email}
-            placeholder="Почта"
-            className="input input-bordered w-full"
-          />
-          {state?.errors?.email && (
-            <div className="mt-0.5 ml-0.5 flex flex-col">
-              <span className="label-text-alt text-red-400">
-                {state?.errors?.email}
-              </span>
+    <div className="flex flex-col w-full max-w-sm">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-2xl">Вход</CardTitle>
+          <CardDescription>
+            Введите учетные данные для входа в систему
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Form {...form}>
+            <form action={action} className="flex flex-col gap-6">
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Почта</FormLabel>
+                    <FormControl>
+                      <Input placeholder="ivan@primer.ru" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="flex">
+                      <FormLabel>Пароль</FormLabel>
+                      <a
+                        href="#"
+                        className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
+                      >
+                        Забыли? Сбросить
+                      </a>
+                    </div>
+                    <FormControl>
+                      <Input placeholder="Пароль" type="password" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button type="submit" disabled={pending}>
+                Войти
+              </Button>
+            </form>
+            <div className="mt-4 text-center text-sm">
+              Еще нет аккаунта?{" "}
+              <Link href="/sign-up" className="underline underline-offset-4">
+                Зарегистрироваться
+              </Link>
             </div>
-          )}
-        </label>
-
-        <label className="form-control w-full">
-          <div className="label">
-            <span className="label-text">Пароль</span>
-          </div>
-          <input
-            type="password"
-            name="password"
-            defaultValue={defaultValues?.password}
-            placeholder="Пароль"
-            className="input input-bordered w-full"
-          />
-          {state?.errors?.password && (
-            <div className="mt-0.5 ml-0.5 flex flex-col">
-              <span className="label-text-alt text-red-400">
-                {state?.errors?.password}
-              </span>
-            </div>
-          )}
-        </label>
-
-        <Button className="btn mt-2" type="submit" disabled={pending}>
-          Войти
-        </Button>
-        <Link className="link" href="/sign-up">
-          Еще нет аккаунта? Зарегистрироваться
-        </Link>
-        {state?.message && <p className="text-red-400">{state.message}</p>}
-      </form>
+          </Form>
+        </CardContent>
+      </Card>
     </div>
   );
 }

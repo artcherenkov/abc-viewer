@@ -35,9 +35,9 @@ export async function signin(_prevState: unknown, formData: FormData) {
     if (isRedirectError(error)) throw error;
 
     if (isInvalidPasswordError(error)) {
-      return { fieldsData, message: INVALID_CREDENTIALS_ERROR };
+      return { fieldsData, formError: INVALID_CREDENTIALS_ERROR };
     }
 
-    return { message: UNKNOWN_ERROR };
+    return { formError: UNKNOWN_ERROR };
   }
 }
