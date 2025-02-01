@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -24,37 +24,62 @@ import {
 } from "@/components/ui/Form";
 import { Input } from "@/components/ui/Input";
 import { useToast } from "@/hooks/useToast";
-import { signup } from "@/lib/actions/authentication/signup";
+import { sendVerificationCode } from "@/lib/actions/authentication/sendVerificationCode";
 import { SignUpFormSchema } from "@/lib/descriptions/signUpFormSchema";
 
 const formSchema = SignUpFormSchema;
 
 export function SignUpForm() {
-  const [state, action, pending] = useActionState(signup, {
-    errors: {},
+  const [
+    sendVerificationState,
+    sendVerificationAction,
+    sendVerificationPending,
+  ] = useActionState(sendVerificationCode, {
+    status: {
+      isAwaiting: true,
+      isSuccess: false,
+      isError: false,
+      hasCodeSent: false,
+    },
     fieldsData: {
       name: "Иван Примеров",
-      email: "ivan@primer.ru",
+      email: "art.cherenkov@gmail.com",
       password: "test",
     },
+    errors: {},
+    errorMessage: "",
   });
 
   const { toast } = useToast();
+  const formRef = useRef<HTMLFormElement>(null);
+
+  const { status, errorMessage } = sendVerificationState;
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: state?.fieldsData,
+    defaultValues: sendVerificationState?.fieldsData,
   });
 
   useEffect(() => {
-    if (!pending && state?.formError) {
+    if (status.isError) {
       toast({
         variant: "destructive",
         title: "Ошибка авторизации",
-        description: state.formError,
+        description: errorMessage,
       });
     }
-  }, [state?.formError, pending, toast]);
+  }, [status, errorMessage, toast]);
+
+  useEffect(() => {
+    if (status.hasCodeSent) {
+      toast({
+        title: "Подтвердите почту",
+        description: "На вашу почту отправлен код. Введите его в поле",
+      });
+    }
+  }, [status, errorMessage, toast]);
+
+  const disableForm = sendVerificationPending || status.hasCodeSent;
 
   return (
     <div className="flex flex-col w-full max-w-sm">
@@ -67,7 +92,11 @@ export function SignUpForm() {
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form action={action} className="flex flex-col gap-6">
+            <form
+              action={sendVerificationAction}
+              ref={formRef}
+              className="flex flex-col gap-6"
+            >
               <FormField
                 control={form.control}
                 name="name"
@@ -75,7 +104,11 @@ export function SignUpForm() {
                   <FormItem>
                     <FormLabel>Имя</FormLabel>
                     <FormControl>
-                      <Input placeholder="Иван Примеров" {...field} />
+                      <Input
+                        disabled={disableForm}
+                        placeholder="Иван Примеров"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -88,7 +121,11 @@ export function SignUpForm() {
                   <FormItem>
                     <FormLabel>Почта</FormLabel>
                     <FormControl>
-                      <Input placeholder="ivan@primer.ru" {...field} />
+                      <Input
+                        disabled={disableForm}
+                        placeholder="ivan@primer.ru"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -102,13 +139,18 @@ export function SignUpForm() {
                     <FormLabel>Пароль</FormLabel>
 
                     <FormControl>
-                      <Input placeholder="Пароль" type="password" {...field} />
+                      <Input
+                        disabled={disableForm}
+                        placeholder="Пароль"
+                        type="password"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <Button type="submit" disabled={pending}>
+              <Button type="submit" disabled={disableForm}>
                 Зарегистрироваться
               </Button>
             </form>

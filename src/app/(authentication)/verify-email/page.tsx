@@ -16,25 +16,25 @@ interface IVerifyEmailProps {
 const VerifyEmail = async ({ email, token }: IVerifyEmailProps) => {
   const data = await verifyEmail({ token, email });
 
-  // if (!data.success) {
-  //   return (
-  //     <Link href="/sign-up">
-  //       <Alert
-  //         variant="destructive"
-  //         className="cursor-pointer hover:opacity-60 active:opacity-30"
-  //       >
-  //         <AlertCircle className="h-4 w-4" />
-  //         <AlertTitle className="font-bold">Ошибка</AlertTitle>
-  //         <AlertDescription>
-  //           {data.error}.{" "}
-  //           <span className="underline underline-offset-4">
-  //             Попробуйте еще раз
-  //           </span>
-  //         </AlertDescription>
-  //       </Alert>
-  //     </Link>
-  //   );
-  // }
+  if (!data.success) {
+    return (
+      <Link href="/sign-up">
+        <Alert
+          variant="destructive"
+          className="cursor-pointer hover:opacity-60 active:opacity-30"
+        >
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle className="font-bold">Ошибка</AlertTitle>
+          <AlertDescription>
+            {data.error}.{" "}
+            <span className="underline underline-offset-4">
+              Попробуйте еще раз
+            </span>
+          </AlertDescription>
+        </Alert>
+      </Link>
+    );
+  }
 
   return (
     <Link href="/dashboard">

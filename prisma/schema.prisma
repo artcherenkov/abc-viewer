@@ -44,10 +44,10 @@ model Session {
 }
 
 model User {
-  id               String    @id @default(cuid())
+  id               String             @id @default(cuid())
   name             String?
-  email            String?   @unique
-  emailVerified    DateTime? @map("email_verified")
+  email            String?            @unique
+  emailVerified    DateTime?          @map("email_verified")
   password         String?
   image            String?
   accounts         Account[]
@@ -55,6 +55,7 @@ model User {
   resetToken       String? // Для сброса пароля
   resetTokenExpiry DateTime? // Для сброса пароля
   files            File[]
+  VerificationCode VerificationCode[]
 
   @@map("users")
 }
@@ -66,6 +67,27 @@ model VerificationToken {
 
   @@unique([identifier, token])
   @@map("verification_tokens")
+}
+
+model VerificationCode {
+  id        Int                  @id @default(autoincrement())
+  email     String
+  code      String
+  type      VerificationCodeType
+  expires   DateTime
+  createdAt DateTime             @default(now())
+
+  // Опционально: связь с пользователем, если пользователь уже существует
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([email, code])
+  @@map("verification_codes")
+}
+
+enum VerificationCodeType {
+  REGISTER
+  RESET_PASSWORD
 }
 
 model File {
