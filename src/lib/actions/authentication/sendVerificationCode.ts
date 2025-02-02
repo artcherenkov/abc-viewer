@@ -1,7 +1,9 @@
 "use server";
 
 import { SignUpFormSchema } from "@/lib/descriptions/signUpFormSchema";
+import { setHttpOnlyCookie } from "@/lib/helpers/cookie";
 import { generateVerificationCode } from "@/lib/helpers/generateVerificationCode";
+import { createRegistrationSession } from "@/lib/helpers/registrationSession";
 import { sendEmail } from "@/lib/helpers/sendVerificationEmail";
 
 import { prisma } from "../../../../prisma/prisma";
@@ -63,8 +65,15 @@ export async function sendVerificationCode(
     };
   }
 
+  await createRegistrationSession(email, fieldsData);
+  await setHttpOnlyCookie({ name: "email", value: email });
+
   // Генерируем код подтверждения
   const code = generateVerificationCode();
+
+  await prisma.verificationCode.deleteMany({
+    where: { email, type: "REGISTER" },
+  });
 
   // Сохраняем код и данные пользователя в базе данных
   await prisma.verificationCode.create({

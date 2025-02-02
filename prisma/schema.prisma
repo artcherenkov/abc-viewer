@@ -90,6 +90,16 @@ enum VerificationCodeType {
   RESET_PASSWORD
 }
 
+model RegistrationSession {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  data      Json
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@map("registration_sessions")
+}
+
 model File {
   id         String   @id @default(cuid())
   userId     String   @map("user_id")

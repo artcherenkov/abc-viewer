@@ -13,5 +13,6 @@ export const SignUpFormSchema = z.object({
   password: z
     .string()
     .regex(/[a-zA-Z]/, { message: "Содержать хотя бы одну букву." })
+    .regex(/[0-9]/, { message: "Содержать хотя бы одну цифру." })
     .trim(),
 });

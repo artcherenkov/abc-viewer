@@ -1,10 +1,8 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { useActionState, useEffect, useRef } from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
+import { redirect } from "next/navigation";
+import { useActionState, useEffect } from "react";
 
 import { Button } from "@/components/ui/Button";
 import {
@@ -14,20 +12,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/Card";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/Form";
 import { Input } from "@/components/ui/Input";
+import { Label } from "@/components/ui/Label";
 import { useToast } from "@/hooks/useToast";
 import { sendVerificationCode } from "@/lib/actions/authentication/sendVerificationCode";
-import { SignUpFormSchema } from "@/lib/descriptions/signUpFormSchema";
 
-const formSchema = SignUpFormSchema;
+const ErrorMessage = ({ children }: { children: string | string[] }) => (
+  <p className="text-destructive text-sm">{children}</p>
+);
 
 export function SignUpForm() {
   const [
@@ -42,23 +34,17 @@ export function SignUpForm() {
       hasCodeSent: false,
     },
     fieldsData: {
-      name: "Иван Примеров",
-      email: "art.cherenkov@gmail.com",
-      password: "test",
+      name: "",
+      email: "",
+      password: "",
     },
     errors: {},
     errorMessage: "",
   });
 
   const { toast } = useToast();
-  const formRef = useRef<HTMLFormElement>(null);
 
-  const { status, errorMessage } = sendVerificationState;
-
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: sendVerificationState?.fieldsData,
-  });
+  const { status, errorMessage, errors, fieldsData } = sendVerificationState;
 
   useEffect(() => {
     if (status.isError) {
@@ -76,6 +62,8 @@ export function SignUpForm() {
         title: "Подтвердите почту",
         description: "На вашу почту отправлен код. Введите его в поле",
       });
+
+      redirect("/verify-email");
     }
   }, [status, errorMessage, toast]);
 
@@ -91,76 +79,73 @@ export function SignUpForm() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Form {...form}>
-            <form
-              action={sendVerificationAction}
-              ref={formRef}
-              className="flex flex-col gap-6"
-            >
-              <FormField
-                control={form.control}
+          <form action={sendVerificationAction} className="flex flex-col gap-6">
+            <div className="grid w-full max-w-sm items-center gap-1.5">
+              <Label htmlFor="name">Имя</Label>
+              <Input
+                type="text"
+                id="name"
                 name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Имя</FormLabel>
-                    <FormControl>
-                      <Input
-                        disabled={disableForm}
-                        placeholder="Иван Примеров"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                defaultValue={fieldsData.name}
+                placeholder="Иван Петров"
+                disabled={disableForm}
               />
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Почта</FormLabel>
-                    <FormControl>
-                      <Input
-                        disabled={disableForm}
-                        placeholder="ivan@primer.ru"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Пароль</FormLabel>
-
-                    <FormControl>
-                      <Input
-                        disabled={disableForm}
-                        placeholder="Пароль"
-                        type="password"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button type="submit" disabled={disableForm}>
-                Зарегистрироваться
-              </Button>
-            </form>
-            <div className="mt-4 text-center text-sm">
-              Уже есть аккаунт?{" "}
-              <Link href="/sign-in" className="underline underline-offset-4">
-                Войти
-              </Link>
+              {errors?.name?.map((err) => (
+                <ErrorMessage key={err}>{err}</ErrorMessage>
+              ))}
             </div>
-          </Form>
+
+            <div className="grid w-full max-w-sm items-center gap-1.5">
+              <Label htmlFor="email">Почта</Label>
+              <Input
+                type="email"
+                id="email"
+                name="email"
+                defaultValue={fieldsData.email}
+                placeholder="ivan@petrov.ru"
+                disabled={disableForm}
+              />
+              {errors?.email?.map((err) => (
+                <ErrorMessage key={err}>{err}</ErrorMessage>
+              ))}
+            </div>
+
+            <div className="grid w-full max-w-sm items-center gap-1.5">
+              <Label htmlFor="password">Пароль</Label>
+              <Input
+                type="password"
+                id="password"
+                name="password"
+                defaultValue={fieldsData.password}
+                placeholder="Пароль"
+                disabled={disableForm}
+              />
+
+              {errors?.password && (
+                <>
+                  <ErrorMessage>Пароль должен:</ErrorMessage>
+
+                  <ul>
+                    {errors?.password.map((err) => (
+                      <li key={err}>
+                        <ErrorMessage key={err}>– {err}</ErrorMessage>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
+            </div>
+
+            <Button type="submit" disabled={disableForm}>
+              Зарегистрироваться
+            </Button>
+          </form>
+          <div className="mt-4 text-center text-sm">
+            Уже есть аккаунт?{" "}
+            <Link href="/sign-in" className="underline underline-offset-4">
+              Войти
+            </Link>
+          </div>
         </CardContent>
       </Card>
     </div>

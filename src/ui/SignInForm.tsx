@@ -33,8 +33,8 @@ export function SignInForm() {
   const [state, action, pending] = useActionState(signin, {
     errors: {},
     fieldsData: {
-      email: "ivan@primer.ru",
-      password: "test",
+      email: "",
+      password: "",
     },
   });
 
