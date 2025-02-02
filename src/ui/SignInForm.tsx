@@ -22,16 +22,8 @@ const ErrorMessage = ({ children }: { children: string | string[] }) => (
 
 export function SignInForm() {
   const [state, action, pending] = useActionState(signin, {
-    status: {
-      isAwaiting: true,
-      isSuccess: false,
-      isError: false,
-    },
-    errors: {},
-    fieldsData: {
-      email: "",
-      password: "",
-    },
+    status: { isAwaiting: true, isSuccess: false, isError: false },
+    fieldsData: { email: "", password: "" },
   });
   const { status, errors, errorMessage, fieldsData } = state;
 
@@ -42,7 +34,7 @@ export function SignInForm() {
       toast({
         variant: "destructive",
         title: "Ошибка входа",
-        description: state.errorMessage,
+        description: errorMessage,
       });
     }
   }, [errorMessage, status, toast]);
@@ -55,6 +47,7 @@ export function SignInForm() {
           <CardDescription>
             Введите учетные данные для входа в систему
           </CardDescription>
+          {errorMessage && <ErrorMessage>{errorMessage}</ErrorMessage>}
         </CardHeader>
         <CardContent>
           <form action={action} className="flex flex-col gap-6">

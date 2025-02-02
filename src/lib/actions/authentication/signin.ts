@@ -34,11 +34,7 @@ export async function signin(
   // Отобразить ошибки валидации
   if (!validated.success) {
     return {
-      status: {
-        isAwaiting: false,
-        isSuccess: false,
-        isError: true,
-      },
+      status: { isAwaiting: false, isSuccess: false, isError: true },
       fieldsData,
       errors: validated.error.flatten().fieldErrors,
     };
@@ -49,35 +45,22 @@ export async function signin(
     await signIn("credentials", validated.data);
 
     return {
-      status: {
-        isAwaiting: false,
-        isSuccess: true,
-        isError: false,
-      },
+      status: { isAwaiting: false, isSuccess: true, isError: false },
       fieldsData,
     };
   } catch (error) {
-    // Next.js под капотом как-то использует эту ошибку для редиректа
     if (isRedirectError(error)) throw error;
 
     if (isInvalidPasswordError(error)) {
       return {
-        status: {
-          isAwaiting: false,
-          isSuccess: false,
-          isError: true,
-        },
+        status: { isAwaiting: false, isSuccess: false, isError: true },
         fieldsData,
         errorMessage: INVALID_CREDENTIALS_ERROR,
       };
     }
 
     return {
-      status: {
-        isAwaiting: false,
-        isSuccess: false,
-        isError: true,
-      },
+      status: { isAwaiting: false, isSuccess: false, isError: true },
       fieldsData,
       errorMessage: UNKNOWN_ERROR,
     };
