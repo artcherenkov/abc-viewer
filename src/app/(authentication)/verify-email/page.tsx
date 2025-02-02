@@ -1,9 +1,9 @@
 import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
+import { OneTimeCodeForm } from "@/components/containers/OneTimeCodeForm";
 import { getCookie } from "@/lib/helpers/cookie";
 import { getRegistrationSession } from "@/lib/repositories/registrationSession";
-import { OneTimeCodeForm } from "@/ui/OneTimeCodeForm";
 
 import { prisma } from "../../../../prisma/prisma";
 

@@ -3,8 +3,8 @@
 import { User } from "next-auth";
 import { useActionState } from "react";
 
+import FileUploader from "@/components/containers/FileUploader";
 import { signout } from "@/lib/actions/authentication/signout";
-import FileUploader from "@/ui/FileUploader";
 
 interface IDashboardProps {
   user?: User;
