@@ -60,7 +60,7 @@ export function SignUpForm() {
     if (status.hasCodeSent) {
       toast({
         title: "Подтвердите почту",
-        description: "На вашу почту отправлен код. Введите его в поле",
+        description: "Мы отправили код на вашу почту. Введите его в поле",
       });
 
       redirect("/verify-email");
@@ -102,7 +102,7 @@ export function SignUpForm() {
                 id="email"
                 name="email"
                 defaultValue={fieldsData.email}
-                placeholder="ivan@petrov.ru"
+                placeholder="example@mail.ru"
                 disabled={disableForm}
               />
               {errors?.email?.map((err) => (

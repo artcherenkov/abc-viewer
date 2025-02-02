@@ -1,10 +1,7 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useActionState, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
 
 import { Button } from "@/components/ui/Button";
 import {
@@ -14,46 +11,41 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/Card";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/Form";
 import { Input } from "@/components/ui/Input";
+import { Label } from "@/components/ui/Label";
 import { useToast } from "@/hooks/useToast";
 import { signin } from "@/lib/actions/authentication/signin";
-import { SignInFormSchema } from "@/lib/descriptions/signInFormSchema";
 
-const formSchema = SignInFormSchema;
+const ErrorMessage = ({ children }: { children: string | string[] }) => (
+  <p className="text-destructive text-sm">{children}</p>
+);
 
 export function SignInForm() {
   const [state, action, pending] = useActionState(signin, {
+    status: {
+      isAwaiting: true,
+      isSuccess: false,
+      isError: false,
+    },
     errors: {},
     fieldsData: {
       email: "",
       password: "",
     },
   });
+  const { status, errors, errorMessage, fieldsData } = state;
 
   const { toast } = useToast();
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: state?.fieldsData,
-  });
-
   useEffect(() => {
-    if (!pending && state?.formError) {
+    if (status.isError) {
       toast({
         variant: "destructive",
-        title: "Ошибка регистрации",
-        description: state.formError,
+        title: "Ошибка входа",
+        description: state.errorMessage,
       });
     }
-  }, [state?.formError, pending, toast]);
+  }, [errorMessage, status, toast]);
 
   return (
     <div className="flex flex-col w-full max-w-sm">
@@ -65,53 +57,45 @@ export function SignInForm() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Form {...form}>
-            <form action={action} className="flex flex-col gap-6">
-              <FormField
-                control={form.control}
+          <form action={action} className="flex flex-col gap-6">
+            <div className="grid w-full max-w-sm items-center gap-1.5">
+              <Label htmlFor="email">Почта</Label>
+              <Input
+                type="email"
+                id="email"
                 name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Почта</FormLabel>
-                    <FormControl>
-                      <Input placeholder="ivan@primer.ru" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                defaultValue={fieldsData.email}
+                placeholder="example@mail.ru"
+                disabled={pending}
               />
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <div className="flex">
-                      <FormLabel>Пароль</FormLabel>
-                      <a
-                        href="#"
-                        className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
-                      >
-                        Забыли? Сбросить
-                      </a>
-                    </div>
-                    <FormControl>
-                      <Input placeholder="Пароль" type="password" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button type="submit" disabled={pending}>
-                Войти
-              </Button>
-            </form>
-            <div className="mt-4 text-center text-sm">
-              Еще нет аккаунта?{" "}
-              <Link href="/sign-up" className="underline underline-offset-4">
-                Зарегистрироваться
-              </Link>
+              {errors?.email?.map((err) => (
+                <ErrorMessage key={err}>{err}</ErrorMessage>
+              ))}
             </div>
-          </Form>
+            <div className="grid w-full max-w-sm items-center gap-1.5">
+              <Label htmlFor="password">Пароль</Label>
+              <Input
+                type="password"
+                id="password"
+                name="password"
+                defaultValue={fieldsData.password}
+                placeholder="Пароль"
+                disabled={pending}
+              />
+              {errors?.password?.map((err) => (
+                <ErrorMessage key={err}>{err}</ErrorMessage>
+              ))}
+            </div>
+            <Button type="submit" disabled={pending}>
+              Войти
+            </Button>
+          </form>
+          <div className="mt-4 text-center text-sm">
+            Еще нет аккаунта?{" "}
+            <Link href="/sign-up" className="underline underline-offset-4">
+              Зарегистрироваться
+            </Link>
+          </div>
         </CardContent>
       </Card>
     </div>

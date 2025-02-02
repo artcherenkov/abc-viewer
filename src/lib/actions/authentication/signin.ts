@@ -10,7 +10,19 @@ import {
 import { SignInFormSchema } from "@/lib/descriptions/signInFormSchema";
 import { isInvalidPasswordError } from "@/lib/helpers/errors";
 
-export async function signin(_prevState: unknown, formData: FormData) {
+type TSignInStatus = Record<"isAwaiting" | "isSuccess" | "isError", boolean>;
+
+type TSendVerificationCode = {
+  status: TSignInStatus;
+  fieldsData: { email: string; password: string };
+  errors?: Record<string, string[]>;
+  errorMessage?: string;
+};
+
+export async function signin(
+  _prevState: unknown,
+  formData: FormData,
+): Promise<TSendVerificationCode> {
   const fieldsData = {
     email: formData.get("email") as string,
     password: formData.get("password") as string,
@@ -22,22 +34,52 @@ export async function signin(_prevState: unknown, formData: FormData) {
   // Отобразить ошибки валидации
   if (!validated.success) {
     return {
-      errors: validated.error.flatten().fieldErrors,
+      status: {
+        isAwaiting: false,
+        isSuccess: false,
+        isError: true,
+      },
       fieldsData,
+      errors: validated.error.flatten().fieldErrors,
     };
   }
 
   try {
     // Авторизовать пользователя
     await signIn("credentials", validated.data);
+
+    return {
+      status: {
+        isAwaiting: false,
+        isSuccess: true,
+        isError: false,
+      },
+      fieldsData,
+    };
   } catch (error) {
     // Next.js под капотом как-то использует эту ошибку для редиректа
     if (isRedirectError(error)) throw error;
 
     if (isInvalidPasswordError(error)) {
-      return { fieldsData, formError: INVALID_CREDENTIALS_ERROR };
+      return {
+        status: {
+          isAwaiting: false,
+          isSuccess: false,
+          isError: true,
+        },
+        fieldsData,
+        errorMessage: INVALID_CREDENTIALS_ERROR,
+      };
     }
 
-    return { formError: UNKNOWN_ERROR };
+    return {
+      status: {
+        isAwaiting: false,
+        isSuccess: false,
+        isError: true,
+      },
+      fieldsData,
+      errorMessage: UNKNOWN_ERROR,
+    };
   }
 }

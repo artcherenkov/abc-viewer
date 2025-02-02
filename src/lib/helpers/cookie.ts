@@ -23,8 +23,8 @@ export async function setHttpOnlyCookie({
     value,
     httpOnly: true,
     path,
-    // secure: true, // Рекомендуется использовать secure для передачи cookie только по HTTPS
-    maxAge, // Время жизни cookie в секундах (например, 1 день)
+    // secure: true, // передачи cookie только по HTTPS
+    maxAge,
   });
 }
 
