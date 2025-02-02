@@ -44,18 +44,19 @@ model Session {
 }
 
 model User {
-  id               String             @id @default(cuid())
-  name             String?
-  email            String?            @unique
-  emailVerified    DateTime?          @map("email_verified")
-  password         String?
-  image            String?
-  accounts         Account[]
-  sessions         Session[]
-  resetToken       String? // Для сброса пароля
-  resetTokenExpiry DateTime? // Для сброса пароля
-  files            File[]
-  VerificationCode VerificationCode[]
+  id                   String                 @id @default(cuid())
+  name                 String?
+  email                String?                @unique
+  emailVerified        DateTime?              @map("email_verified")
+  password             String?
+  image                String?
+  accounts             Account[]
+  sessions             Session[]
+  resetToken           String? // Для сброса пароля
+  resetTokenExpiry     DateTime? // Для сброса пароля
+  files                File[]
+  VerificationCode     VerificationCode[]
+  PasswordResetSession PasswordResetSession[]
 
   @@map("users")
 }
@@ -98,6 +99,19 @@ model RegistrationSession {
   createdAt DateTime @default(now())
 
   @@map("registration_sessions")
+}
+
+model PasswordResetSession {
+  id         String   @id @default(cuid())
+  email      String // email, для которого запущен процесс сброса пароля
+  isVerified Boolean  @default(false) // флаг, подтвержден ли введенный код
+  expiresAt  DateTime // время, до которого действует эта сессия
+  createdAt  DateTime @default(now())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([email]) // можно ограничить так, чтобы для одного email была активна не более одной сессии
+  @@map("password_reset_sessions")
 }
 
 model File {

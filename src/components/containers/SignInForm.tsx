@@ -66,7 +66,15 @@ export function SignInForm() {
               ))}
             </div>
             <div className="grid w-full max-w-sm items-center gap-1.5">
-              <Label htmlFor="password">Пароль</Label>
+              <div className="flex">
+                <Label htmlFor="password">Пароль</Label>
+                <Link
+                  href="/forgot-password/email"
+                  className="ml-auto text-sm font-medium leading-none hover:underline cursor-pointer"
+                >
+                  Забыли пароль?
+                </Link>
+              </div>
               <Input
                 type="password"
                 id="password"
