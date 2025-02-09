@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import React from "react";
 
 import { auth } from "@/auth";
+import FileUploader from "@/components/containers/FileUploader";
 import Sidebar from "@/components/containers/Sidebar";
 import {
   Breadcrumb,
@@ -41,10 +42,7 @@ export default async function DashboardLayout({
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
-            <Button className="ml-auto" variant="outline">
-              <FileUp />
-              Загрузить
-            </Button>
+            <FileUploader />
           </div>
         </header>
         {children}

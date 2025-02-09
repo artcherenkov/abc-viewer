@@ -68,7 +68,7 @@ const FileUploader = () => {
   );
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col ml-auto">
       <input
         type="file"
         ref={fileInputRef}
@@ -76,8 +76,13 @@ const FileUploader = () => {
         onChange={handleFileChange}
       />
 
-      <Button className="btn self-start mt-4" onClick={handleButtonClick}>
-        Выбрать файл
+      <Button
+        className="btn self-start"
+        variant="secondary"
+        size="sm"
+        onClick={handleButtonClick}
+      >
+        Загрузить файл
       </Button>
 
       {file && (
