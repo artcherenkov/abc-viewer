@@ -1,4 +1,4 @@
-import { FileUp } from "lucide-react";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import React from "react";
 
@@ -8,10 +8,8 @@ import Sidebar from "@/components/containers/Sidebar";
 import {
   Breadcrumb,
   BreadcrumbItem,
-  BreadcrumbLink,
   BreadcrumbList,
 } from "@/components/ui/Breadcrumb";
-import { Button } from "@/components/ui/Button";
 import { Separator } from "@/components/ui/Separator";
 import {
   SidebarInset,
@@ -38,7 +36,7 @@ export default async function DashboardLayout({
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href="#">Главная</BreadcrumbLink>
+                  <Link href="/dashboard">Главная</Link>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>

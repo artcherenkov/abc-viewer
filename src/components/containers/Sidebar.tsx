@@ -1,10 +1,10 @@
-import { ChevronsUpDown, FolderClosed } from "lucide-react";
+import { FolderClosed } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { User } from "next-auth";
 import React from "react";
 
-import { Avatar, AvatarFallback } from "@/components/ui/Avatar";
+import { SidebarUser } from "@/components/containers/SidebarUser";
 import {
   Sidebar as SidebarComponent,
   SidebarContent,
@@ -15,6 +15,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/Sidebar";
+import { signout } from "@/lib/actions/authentication/signout";
 
 interface ISidebarProps {
   user: User;
@@ -46,23 +47,7 @@ export default async function Sidebar({ user }: ISidebarProps) {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              size="lg"
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-            >
-              <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarFallback className="rounded-lg">АЧ</AvatarFallback>
-              </Avatar>
-              <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold">{user.name}</span>
-                <span className="truncate text-xs">{user.email}</span>
-              </div>
-              <ChevronsUpDown className="ml-auto size-4" />
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
+        <SidebarUser signOutAction={signout} user={user} />
       </SidebarFooter>
     </SidebarComponent>
   );
