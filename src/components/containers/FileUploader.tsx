@@ -1,98 +1,71 @@
 "use client";
 
 import { CircleCheck, File } from "lucide-react";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import colors from "tailwindcss/colors";
 
 import { Button } from "@/components/ui/Button";
 import Spinner from "@/components/ui/Loader";
+import { toast } from "@/hooks/useToast";
 import { invalidateCacheTag } from "@/lib/actions/cache/invalidateCacheTag";
+import { uploadFile } from "@/lib/helpers/uploadFile";
+
+const getErrorMessage = (err: unknown) => {
+  return err instanceof Error
+    ? err.message
+    : "Произошла неожиданная ошибка, попробуйте позже.";
+};
 
 const FileUploader = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [file, setFile] = useState<File | null>(null);
-  const [visualProgress, setVisualProgress] = useState(0);
+  const [progress, setProgress] = useState(0);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0] || null;
     setFile(selectedFile);
+    handleUpload(selectedFile);
   };
 
   const handleButtonClick = () => {
     fileInputRef.current?.click();
   };
 
-  // Логика загрузки файла
-  const handleUpload = useCallback(async () => {
-    if (!file) {
-      return;
+  const handleProgress = useCallback((event: ProgressEvent) => {
+    if (event.lengthComputable) {
+      const progress = Math.round((event.loaded / event.total) * 100);
+      setProgress(progress);
     }
+  }, []);
 
-    try {
-      setVisualProgress(0);
+  const handleSuccess = useCallback(() => {
+    setTimeout(() => {
+      setFile(null);
+      setProgress(0);
+    }, 3000);
 
-      // Шаг 1: Получение Signed URL
-      const res = await fetch("/api/files/get-upload-url", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fileName: file.name, fileSize: file.size }),
-      });
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  }, []);
 
-      if (!res.ok) throw new Error("Failed to get upload URL");
+  const handleUpload = useCallback(
+    async (file: File | null) => {
+      try {
+        setProgress(0);
+        await uploadFile(file, handleProgress);
+        await invalidateCacheTag("files");
+      } catch (err) {
+        const description = getErrorMessage(err);
 
-      const { signedUrl, fileKey } = await res.json();
-
-      // Шаг 2: Загрузка файла в S3
-      const xhr = new XMLHttpRequest();
-      xhr.upload.onprogress = (e) => {
-        if (e.lengthComputable) {
-          const progress = Math.round((e.loaded / e.total) * 100);
-          setVisualProgress(progress);
-        }
-      };
-      xhr.open("PUT", signedUrl, true);
-      xhr.setRequestHeader("Content-Type", "application/xml");
-      xhr.send(file);
-
-      await new Promise((resolve, reject) => {
-        xhr.onload = resolve;
-        xhr.onerror = reject;
-      });
-
-      // Шаг 3: Подтверждение загрузки
-      const confirmRes = await fetch("/api/files/confirm-upload", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          fileKey,
-          fileName: file.name,
-          fileSize: file.size,
-        }),
-      });
-
-      if (!confirmRes.ok) throw new Error("Failed to confirm upload");
-
-      await invalidateCacheTag("files");
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setTimeout(() => {
-        setFile(null);
-        setVisualProgress(0);
-      }, 3000);
-
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
+        toast({ title: "Ошибка", description, variant: "destructive" });
+      } finally {
+        handleSuccess();
       }
-    }
-  }, [file]);
-
-  useEffect(() => {
-    if (file) {
-      handleUpload();
-    }
-  }, [file, handleUpload]);
+    },
+    [handleProgress, handleSuccess],
+  );
 
   return (
     <div className="flex flex-col">
@@ -112,7 +85,7 @@ const FileUploader = () => {
           <div className="p-6 bg-zinc-300 relative">
             <div
               className="absolute top-0 left-0 h-full bg-blue-500 transition-all duration-500"
-              style={{ width: `${visualProgress}%` }}
+              style={{ width: `${progress}%` }}
             ></div>
           </div>
           <div className="p-4 pb-8">
@@ -120,7 +93,7 @@ const FileUploader = () => {
               <File />
               {file?.name || "text.xml"}
               <div className="ml-auto">
-                {visualProgress === 100 ? (
+                {progress === 100 ? (
                   <CircleCheck
                     size={28}
                     color={colors.white}
