@@ -1,23 +1,14 @@
-import clsx from "clsx";
+import { Loader } from "lucide-react";
 import React from "react";
+import colors from "tailwindcss/colors";
 
-const sizeClasses = {
-  sm: "w-4 h-4 border-2",
-  md: "w-8 h-8 border-4",
-  lg: "w-12 h-12 border-6",
-  xl: "w-16 h-16 border-8",
-} as const;
-
-const Spinner = ({ size = "md" }: { size?: keyof typeof sizeClasses }) => {
+const Spinner = () => {
   return (
-    <div className="flex items-center justify-center">
-      <div
-        className={clsx(
-          "border-t-transparent border-solid rounded-full animate-spin",
-          sizeClasses[size],
-        )}
-      ></div>
-    </div>
+    <Loader
+      className="animate-[spin_2s_linear_infinite]"
+      color={colors.zinc["300"]}
+      size={28}
+    />
   );
 };
 

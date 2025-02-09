@@ -1,28 +1,36 @@
 "use client";
 
-import React, { useState } from "react";
+import { CircleCheck, File } from "lucide-react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import colors from "tailwindcss/colors";
+
+import { Button } from "@/components/ui/Button";
+import Spinner from "@/components/ui/Loader";
+import { invalidateCacheTag } from "@/lib/actions/cache/invalidateCacheTag";
 
 const FileUploader = () => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const [file, setFile] = useState<File | null>(null);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [statusMessage, setStatusMessage] = useState<string | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
+  const [visualProgress, setVisualProgress] = useState(0);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0] || null;
     setFile(selectedFile);
-    setStatusMessage(null);
   };
 
-  const handleUpload = async () => {
+  const handleButtonClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  // Логика загрузки файла
+  const handleUpload = useCallback(async () => {
     if (!file) {
-      setStatusMessage("Выберите файл.");
       return;
     }
 
     try {
-      setIsUploading(true);
-      setUploadProgress(0);
+      setVisualProgress(0);
 
       // Шаг 1: Получение Signed URL
       const res = await fetch("/api/files/get-upload-url", {
@@ -40,7 +48,7 @@ const FileUploader = () => {
       xhr.upload.onprogress = (e) => {
         if (e.lengthComputable) {
           const progress = Math.round((e.loaded / e.total) * 100);
-          setUploadProgress(progress);
+          setVisualProgress(progress);
         }
       };
       xhr.open("PUT", signedUrl, true);
@@ -65,36 +73,67 @@ const FileUploader = () => {
 
       if (!confirmRes.ok) throw new Error("Failed to confirm upload");
 
-      setStatusMessage("Файл успешно загружен!");
+      await invalidateCacheTag("files");
     } catch (error) {
       console.error(error);
-      setStatusMessage("Ошибка при загрузке файла.");
     } finally {
-      setIsUploading(false);
-      setUploadProgress(0);
-      setFile(null);
+      setTimeout(() => {
+        setFile(null);
+        setVisualProgress(0);
+      }, 3000);
+
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     }
-  };
+  }, [file]);
+
+  useEffect(() => {
+    if (file) {
+      handleUpload();
+    }
+  }, [file, handleUpload]);
 
   return (
-    <div className="mt-10 flex flex-col">
-      <p className="text text-xl">Загрузить файл</p>
+    <div className="flex flex-col">
       <input
         type="file"
-        className="file-input file-input-bordered w-full max-w-xs mt-4"
-        accept=".xml"
-        placeholder="wtf"
+        ref={fileInputRef}
+        className="hidden"
         onChange={handleFileChange}
       />
-      <button
-        className="btn self-start mt-4"
-        onClick={handleUpload}
-        disabled={isUploading || !file}
-      >
-        {isUploading ? "Загрузка..." : "Загрузить"}
-      </button>
-      {uploadProgress > 0 && <p>Прогресс: {uploadProgress}%</p>}
-      {statusMessage && <p>{statusMessage}</p>}
+
+      <Button className="btn self-start mt-4" onClick={handleButtonClick}>
+        Выбрать файл
+      </Button>
+
+      {file && (
+        <div className="absolute bottom-0 right-24 w-1/3 bg-white rounded-lg rounded-br-none rounded-bl-none shadow-md overflow-hidden">
+          <div className="p-6 bg-zinc-300 relative">
+            <div
+              className="absolute top-0 left-0 h-full bg-blue-500 transition-all duration-500"
+              style={{ width: `${visualProgress}%` }}
+            ></div>
+          </div>
+          <div className="p-4 pb-8">
+            <div className="flex items-center gap-2">
+              <File />
+              {file?.name || "text.xml"}
+              <div className="ml-auto">
+                {visualProgress === 100 ? (
+                  <CircleCheck
+                    size={28}
+                    color={colors.white}
+                    fill={colors.green["500"]}
+                  />
+                ) : (
+                  <Spinner />
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
